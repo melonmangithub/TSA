@@ -4,7 +4,7 @@ import com.tsa.lang.Statement;
 import com.tsa.lang.StatementType;
 
 public class FunctionStatement implements Statement {
-    private String functionName;
+    private String functionName; // testing!
 
     public FunctionStatement(String functionName) {
         this.functionName = functionName;
