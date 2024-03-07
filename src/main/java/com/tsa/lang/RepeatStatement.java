@@ -11,8 +11,16 @@ public class RepeatStatement implements Statement {
 
     public RepeatStatement(int repetitions) {
         this.repetitions = repetitions;
-        this.subStatements = null;
+        this.subStatements = new ArrayList<Statement>();
         this.debugDepth = 0;
+    }
+
+    public void print() {
+        System.out.println("Repeat Statement! " + String.format("%d Times", this.repetitions));
+
+        for (Statement statement : this.subStatements) {
+            statement.print();
+        }
     }
 
     public void addSubStatement(Statement statement) {
@@ -25,15 +33,6 @@ public class RepeatStatement implements Statement {
 
     public void setDebugDepth(int debugDepth) {
         this.debugDepth = debugDepth;
-    }
-
-    public void execute() {
-        System.out.println("Repeat " + this.repetitions + " Times");
-
-        for (Statement statement : this.subStatements) {
-            System.out.print(" ".repeat(debugDepth));
-            statement.execute();
-        }
     }
 
     public StatementType getType() {

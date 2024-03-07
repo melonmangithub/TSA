@@ -22,21 +22,71 @@ public class Parser {
     private int p;
 
     public Parser(String code) {
-        this.program = new ArrayList<Statement>();
         this.code = code;
         this.p = 0;
-
-        this.constructProgram();
     }
 
-    private void constructProgram() {
+    public ArrayList<Statement> getProgram() {
+        this.program = new ArrayList<Statement>();
+        Statement statement = this.parseStatement();
+
+        while (statement != null) {
+            this.program.add(statement);
+            statement.print();
+            statement = this.parseStatement();
+        }
+
+        return this.program;
+    }
+
+    private Statement parseStatement() {
+        if (this.currentToken == null) {
+            this.currentToken = nextToken();
+        }
+
+        switch (this.currentToken) {
+            case IDENTIFIER: return parseFunctionStatement();
+            case KEYW_REPEAT: return parseRepeatStatement();
+
+            case END:
+            default:
+                return null;
+        }
+    }
+    
+    // repeat <n> {}
+    private RepeatStatement parseRepeatStatement() {
         this.currentToken = this.nextToken();
 
-        while ((this.currentToken != TokenType.END) && (this.currentToken != TokenType.ERROR)) {
-            System.out.println(this.currentToken.toString());
+        if (this.currentToken != TokenType.NUMBER) {
+            return null;
+        }
 
+        RepeatStatement statement = new RepeatStatement(this.numberBuffer);
+
+        this.currentToken = this.nextToken();
+
+        if (this.currentToken != TokenType.OPEN_BRACE) {
+            return null;
+        }
+
+        this.currentToken = this.nextToken();
+
+        while (this.currentToken != TokenType.CLOSE_BRACE) {
+            statement.addSubStatement(this.parseStatement());
             this.currentToken = this.nextToken();
         }
+
+        this.nextToken();
+
+        return statement;
+    }
+
+    private FunctionStatement parseFunctionStatement() {
+        FunctionStatement function = new FunctionStatement(this.identifierBuffer);
+        this.currentToken = this.nextToken();
+
+        return function;
     }
 
     private TokenType nextToken() {
@@ -53,6 +103,10 @@ public class Parser {
 
             while (Character.isAlphabetic(this.code.charAt(this.p))) {
                 this.identifierBuffer += this.code.charAt(this.p++);
+            }
+
+            if (this.identifierBuffer.toLowerCase().equals("repeat")) {
+                return TokenType.KEYW_REPEAT;
             }
 
             return TokenType.IDENTIFIER;
@@ -79,9 +133,5 @@ public class Parser {
         }
 
         return TokenType.ERROR;
-    }
-
-    public static void main(String[] args) {
-        Parser parser = new Parser("Repeat 10 {RobotForward}");
     }
 }

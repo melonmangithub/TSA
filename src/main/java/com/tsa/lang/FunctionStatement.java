@@ -10,7 +10,7 @@ public class FunctionStatement implements Statement {
         this.functionName = functionName;
     }
 
-    public void execute() {
+    public void print() {
         System.out.print("Call to: " + this.functionName);
     }
 

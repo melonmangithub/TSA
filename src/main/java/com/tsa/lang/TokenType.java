@@ -5,7 +5,7 @@ public enum TokenType {
     CLOSE_BRACE,
     NUMBER,
     IDENTIFIER,
-    REPEAT,
+    KEYW_REPEAT,
     ERROR,
     END
 };
