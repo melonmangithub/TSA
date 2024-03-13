@@ -6,6 +6,7 @@ public enum TokenType {
     NUMBER,
     IDENTIFIER,
     KEYW_REPEAT,
+    SEMICOLON,
     ERROR,
     END
 };

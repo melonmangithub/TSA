@@ -22,7 +22,7 @@ public class Parser {
     private int p;
 
     public Parser(String code) {
-        this.code = code;
+        this.code = code + " ";
         this.p = 0;
     }
 
@@ -32,9 +32,10 @@ public class Parser {
 
         while (statement != null) {
             this.program.add(statement);
-            statement.print();
             statement = this.parseStatement();
         }
+
+        System.out.println(this.program);
 
         return this.program;
     }
@@ -45,8 +46,13 @@ public class Parser {
         }
 
         switch (this.currentToken) {
-            case IDENTIFIER: return parseFunctionStatement();
-            case KEYW_REPEAT: return parseRepeatStatement();
+            case IDENTIFIER: {
+                return parseFunctionStatement();
+            }
+
+            case KEYW_REPEAT: {
+                return parseRepeatStatement();
+            }
 
             case END:
             default:
@@ -73,11 +79,14 @@ public class Parser {
         this.currentToken = this.nextToken();
 
         while (this.currentToken != TokenType.CLOSE_BRACE) {
+            if ((this.currentToken == TokenType.END) || (this.currentToken == TokenType.ERROR)) {
+                return null;
+            }
+
             statement.addSubStatement(this.parseStatement());
-            this.currentToken = this.nextToken();
         }
 
-        this.nextToken();
+        this.currentToken = this.nextToken();
 
         return statement;
     }
@@ -86,23 +95,34 @@ public class Parser {
         FunctionStatement function = new FunctionStatement(this.identifierBuffer);
         this.currentToken = this.nextToken();
 
+        if (this.currentToken != TokenType.SEMICOLON) {
+            return null;
+        }
+
+        this.currentToken = this.nextToken();
+
         return function;
     }
 
+    private boolean inRange() {
+        return this.p < this.code.length();
+    }
+
     private TokenType nextToken() {
-        if (this.p >= this.code.length()) {
+        if (!this.inRange()) {
             return TokenType.END;
         }
 
-        while (Character.isWhitespace(this.code.charAt(p))) {
+        while (this.inRange() && Character.isWhitespace(this.code.charAt(this.p))) {
             this.p++;
         }
 
-        if (Character.isAlphabetic(this.code.charAt(p))) {
+        if (this.inRange() && Character.isAlphabetic(this.code.charAt(this.p))) {
             this.identifierBuffer = "";
 
-            while (Character.isAlphabetic(this.code.charAt(this.p))) {
-                this.identifierBuffer += this.code.charAt(this.p++);
+            while (this.inRange() && Character.isAlphabetic(this.code.charAt(this.p))) {
+                this.identifierBuffer += this.code.charAt(this.p);
+                this.p++;
             }
 
             if (this.identifierBuffer.toLowerCase().equals("repeat")) {
@@ -112,24 +132,30 @@ public class Parser {
             return TokenType.IDENTIFIER;
         }
 
-        if (Character.isDigit(this.code.charAt(p))) {
+        if (this.inRange() && Character.isDigit(this.code.charAt(this.p))) {
             this.identifierBuffer = "";
 
-            while (Character.isDigit(this.code.charAt(p))) {
-                this.identifierBuffer += this.code.charAt(this.p++);
+            while (this.inRange() && Character.isDigit(this.code.charAt(this.p))) {
+                this.identifierBuffer += this.code.charAt(this.p);
+                this.p++;
             }
 
             this.numberBuffer = Integer.parseInt(this.identifierBuffer);
             return TokenType.NUMBER;
         }
 
-        switch (this.code.charAt(this.p)) {
-            case '{':
-                this.p++;
-                return TokenType.OPEN_BRACE;
-            case '}':
-                this.p++;
-                return TokenType.CLOSE_BRACE;
+        if (this.inRange()) {
+            switch (this.code.charAt(this.p)) {
+                case '{':
+                    this.p++;
+                    return TokenType.OPEN_BRACE;
+                case '}':
+                    this.p++;
+                    return TokenType.CLOSE_BRACE;
+                case ';':
+                    this.p++;
+                    return TokenType.SEMICOLON;
+            }
         }
 
         return TokenType.ERROR;

@@ -5,13 +5,20 @@ import com.tsa.lang.StatementType;
 import java.util.*;
 
 public class RepeatStatement implements Statement {
-    private int repetitions;
-    private ArrayList<Statement> subStatements;
+    public int repetitions;
+    public ArrayList<Statement> subStatements;
     private int debugDepth;
 
     public RepeatStatement(int repetitions) {
         this.repetitions = repetitions;
         this.subStatements = new ArrayList<Statement>();
+        this.debugDepth = 0;
+    }
+
+    public RepeatStatement(int repetitions, Statement body) {
+        this.repetitions = repetitions;
+        this.subStatements = new ArrayList<Statement>();
+        this.subStatements.add(body);
         this.debugDepth = 0;
     }
 
@@ -23,12 +30,13 @@ public class RepeatStatement implements Statement {
         }
     }
 
-    public void addSubStatement(Statement statement) {
+    public RepeatStatement addSubStatement(Statement statement) {
         if (this.subStatements == null) {
             this.subStatements = new ArrayList<Statement>();
         }
 
         this.subStatements.add(statement);
+        return this;
     }
 
     public void setDebugDepth(int debugDepth) {

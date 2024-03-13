@@ -4,10 +4,10 @@ import com.tsa.lang.Statement;
 import com.tsa.lang.StatementType;
 
 public class FunctionStatement implements Statement {
-    private String functionName;
+    public String functionName;
 
     public FunctionStatement(String functionName) {
-        this.functionName = functionName;
+        this.functionName = functionName.toLowerCase();
     }
 
     public void print() {
