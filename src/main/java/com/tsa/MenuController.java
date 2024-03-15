@@ -2,17 +2,9 @@ package com.tsa;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.paint.*;
-import javafx.scene.transform.Rotate;
-import javafx.scene.canvas.*;
-import javafx.scene.*;
-import javafx.animation.*;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.image.*;
-import javafx.util.*;
-import com.tsa.lang.*;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.paint.*;
 
 public class MenuController {
     static final String[] TITLES = new String[] {
@@ -39,9 +31,31 @@ public class MenuController {
     private Button previousButton;
     @FXML
     private ImageView previewDisplay;
+    @FXML
+    private Hyperlink loginSignout;
+    @FXML
+    private Label usernameLabel;
+
+    @FXML
+    private TitledPane accountInputPane;
+    @FXML
+    private TextField accountUsername;
+    @FXML
+    private TextField accountPassword;
+    @FXML
+    private Hyperlink accountHyperlink;
+    @FXML
+    private Label accountFeedback;
+    @FXML
+    private Hyperlink accountCreateHyperlink;
+    @FXML
+    private Hyperlink exitHyperlink;
+
 
     private boolean listenerInitalized;
     private Image[] images;
+    private boolean inAccountPanel;
+    private boolean creating;
 
     @FXML
     private void initialize() {
@@ -56,12 +70,15 @@ public class MenuController {
             this.listenerInitalized = true;
         }
 
+        this.loginSignout.setTextAlignment(TextAlignment.CENTER);
         this.images = new Image[App.LEVEL_COUNT];
 
         for (int i = 0; i < App.LEVEL_COUNT; i++) {
             images[i] = new Image("file:C:\\Users\\wanda\\Desktop\\project\\src\\main\\resources\\com\\tsa\\level_screenshot_" + (i + 1) + ".png");
         }
 
+        this.accountInputPane.setOpacity(0);
+        this.accountFeedback.setText("");
         this.update();
     }
 
@@ -100,14 +117,50 @@ public class MenuController {
         }
 
         App.stageRefrence.setTitle("TSA Project - Main Menu");
+
+        if (App.loggedIn) {
+            this.loginSignout.setText("Log Out");
+        } else{ 
+            this.loginSignout.setText("Login");
+        }
+
+        this.usernameLabel.setText(App.getFormattedUsername());
+
+        this.accountHyperlink.setVisited(false);
+        this.accountCreateHyperlink.setVisited(false);
+        this.loginSignout.setVisited(false);
+        this.exitHyperlink.setVisited(false);
     }
 
     @FXML
     private void startLevel() {
-        App.switchMain();
+        if (!this.inAccountPanel) {
+            App.switchMain();
+        }
+    }
+
+    @FXML
+    private void loginCallback() {
+        if (!App.loggedIn) {
+            this.openAccountPanel(false);
+        } else {
+            App.loggedIn = false;
+            this.update();
+        }
+    }
+
+    @FXML
+    private void createAccountCallback() {
+        if (!App.loggedIn) {
+            this.openAccountPanel(true);
+        }
     }
 
     private void scroll(int n) {
+        if (this.inAccountPanel) {
+            return;
+        }
+
         App.currentLevel += n;
 
         if (App.currentLevel > App.LEVEL_COUNT - 1) {
@@ -123,11 +176,81 @@ public class MenuController {
 
     @FXML
     private void movePrevious() {
-        this.scroll(-1);
+        if (!this.inAccountPanel) {
+            this.scroll(-1);
+        }
     }
 
     @FXML
     private void moveNext() {
-        this.scroll(+1);
+        if (!this.inAccountPanel) {
+            this.scroll(+1);
+        }
+    }
+
+    // false: not creating account, true: are creating account
+    @FXML
+    private void openAccountPanel(boolean creating) {
+        if (inAccountPanel) {
+            return;
+        }
+        
+        this.creating = creating;
+        this.inAccountPanel = true;
+        
+        if (creating) {
+            this.accountHyperlink.setText("Create Account");
+            this.accountInputPane.setText("Create New Account");
+        } else {
+            this.accountHyperlink.setText("Login");
+            this.accountInputPane.setText("Login");
+        }
+
+        this.accountFeedback.setText("");
+        this.accountInputPane.setOpacity(1);
+    }
+
+    @FXML
+    private void tryAccountLogin() {
+        if (!inAccountPanel) {
+            return;
+        }
+
+        if (!this.creating) {
+            int id = App.database.getUser(this.accountUsername.getText(), this.accountPassword.getText());
+            String username = this.accountUsername.getText();
+
+            if (id < 1) {
+                this.accountFeedback.setTextFill(Color.RED);
+                this.accountFeedback.setText("Login Failed");
+            } else {
+                this.accountFeedback.setTextFill(Color.GREEN);
+                this.accountFeedback.setText("Logged In!");
+            }
+
+            App.loggedIn = true;
+            App.username = username;
+            this.update();
+        } else {
+            int id = App.database.createUser(this.accountUsername.getText(), this.accountPassword.getText());
+
+            if (id < 1) {
+                this.accountFeedback.setTextFill(Color.RED);
+                this.accountFeedback.setText("Creation Failed");
+            } else {
+                this.accountFeedback.setTextFill(Color.GREEN);
+                this.accountFeedback.setText("Account Created!");
+            }
+        }
+    }
+
+    @FXML
+    private void closeAccountPanel() {
+        this.inAccountPanel = false;
+        this.creating = false;
+        this.accountInputPane.setOpacity(0);
+        this.accountUsername.setText("");
+        this.accountPassword.setText("");
+        this.update();
     }
 }

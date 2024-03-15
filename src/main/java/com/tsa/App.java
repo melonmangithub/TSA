@@ -1,7 +1,6 @@
 package com.tsa;
 
 import javafx.application.Application;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
@@ -9,7 +8,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Currency;
 
 public class App extends Application {
     public static final int LEVEL_COUNT = 4;
@@ -65,7 +63,9 @@ public class App extends Application {
     static Scene mainScene;
     static Scene menuScene;
     static Stage stageRefrence;
-    static boolean inMenu;
+    static Database database;
+    static boolean loggedIn;
+    static String username = "pkonnoth";
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -74,10 +74,28 @@ public class App extends Application {
         stageRefrence = stage;
 
         mainScene = new Scene(fxmlLoaderMain.load(), 800, 540);
-        menuScene = new Scene(fxmlLoaderMenu.load(), 440, 380);
+        menuScene = new Scene(fxmlLoaderMenu.load(), 440, 410);
+        database = new Database();
         
         App.switchMenu();
         stage.show();
+    }
+
+    public static String getFormattedUsername() {
+        if (App.loggedIn) {
+            int tmp = 0;
+
+            for (int i : App.levelProgresses) {
+                if (i == 2) {
+                    tmp++;
+                }
+            }
+
+            double progress = 100 * (double) tmp / App.LEVEL_COUNT;
+            return String.format("%s (%d%% Complete)", App.username, (int) Math.round(progress));
+        } else {
+            return "Not Logged In";
+        }
     }
 
     public static void switchMenu() {

@@ -1,12 +1,10 @@
 package com.tsa;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.*;  
 import javafx.scene.paint.*;
 import javafx.scene.transform.Rotate;
 import javafx.scene.canvas.*;
-import javafx.scene.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.animation.*;
@@ -35,6 +33,8 @@ public class Controller {
     private Hyperlink backToMenuHyperlink;
     @FXML
     private Hyperlink menuFromHeaderHyperlink;
+    @FXML
+    private Label usernameLabel;
 
     private GraphicsContext graphics;
     private double height;
@@ -89,6 +89,7 @@ public class Controller {
 
         this.firstInitializedDone = true;
         this.updateLevelCaption();
+        this.usernameLabel.setText(App.getFormattedUsername());
 
         this.resetEverything();
 
@@ -142,6 +143,8 @@ public class Controller {
         }
 
         this.winningPane.setOpacity(1);
+        this.updateLevelCaption();
+        this.usernameLabel.setText(App.getFormattedUsername());
     }
 
     private void updateLevelCaption() {
@@ -445,9 +448,9 @@ public class Controller {
             this.animationStep = 0;
 
             if (this.currentMap[this.posy][this.posx] == 2) {
+                App.levelProgresses[App.currentLevel] = 2;
                 this.setWinScreen();
                 this.stopRun();
-                App.levelProgresses[App.currentLevel] = 2;
             }
 
             this.nextInstruction();
